@@ -1,54 +1,109 @@
-use std::net::TcpStream;
-use std::io::{Write, Read};
+use std::net::{TcpListener, TcpStream};
+use std::io::{Read, Write};
+use std::time::Duration;
+use std::fs;
 
-use ciborium::{ser::into_writer, de::from_reader};
+use ciborium::{de::from_reader, ser::into_writer};
 
+mod handler;
 mod protocol;
 use protocol::{Request, Response};
 
-fn main() {
-    println!("🚀 Connexion au serveur...");
+fn handle_client(mut stream: TcpStream, recipes: &Vec<String>) {
+    println!("📩 Client connecté");
 
-    let mut stream = TcpStream::connect("127.0.0.1:8000")
-        .expect("❌ Impossible de se connecter");
+    stream.set_read_timeout(Some(Duration::from_secs(5))).ok();
 
-    println!("✅ Connecté !");
-
-    // 🔥 Message
-    let request = Request::Order {
-        recipe_name: "Margherita".to_string(),
-    };
-
-    // 🔥 Sérialisation CBOR
-    let mut send_buffer = Vec::new();
-    into_writer(&request, &mut send_buffer).unwrap();
-
-    println!("📤 Envoi de la requête...");
-    stream.write_all(&send_buffer).unwrap();
-
-    // 🔥 Lecture NON bloquante
-    println!("📥 Attente de la réponse...");
-
-    // 🔹 Lire la taille (4 bytes)
     let mut len_buf = [0u8; 4];
-    stream.read_exact(&mut len_buf).unwrap();
+    if let Err(e) = stream.read_exact(&mut len_buf) {
+        println!("❌ Erreur lecture taille: {:?}", e);
+        return;
+    }
 
     let len = u32::from_be_bytes(len_buf);
-    println!("📏 Taille du message: {}", len);
 
-    // 🔹 Lire le message CBOR
     let mut data = vec![0u8; len as usize];
-    stream.read_exact(&mut data).unwrap();
+    if let Err(e) = stream.read_exact(&mut data) {
+        println!("❌ Erreur lecture data: {:?}", e);
+        return;
+    }
 
-    println!("📦 Données CBOR: {:?}", data);
+    match from_reader::<Request, _>(&data[..]) {
+        Ok(req) => {
+            println!("📨 Requête reçue: {:?}", req);
 
-    // 🔹 Décoder
-    match from_reader::<Response, _>(&data[..]) {
-        Ok(response) => {
-            println!("🍕 Réponse décodée : {:#?}", response);
+            let result = handler::process_request(req, recipes);
+
+            let response = Response::ProductionError {
+                order_id: None,
+                error: result,
+            };
+
+            let mut buffer = Vec::new();
+
+            if let Err(e) = into_writer(&response, &mut buffer) {
+                println!("❌ Erreur sérialisation: {:?}", e);
+                return;
+            }
+
+            let len = (buffer.len() as u32).to_be_bytes();
+
+            if let Err(e) = stream.write_all(&len) {
+                println!("❌ Erreur envoi taille: {:?}", e);
+                return;
+            }
+
+            if let Err(e) = stream.write_all(&buffer) {
+                println!("❌ Erreur envoi data: {:?}", e);
+                return;
+            }
+
+            println!("📤 Réponse envoyée");
         }
         Err(e) => {
-            println!("❌ Erreur décodage: {:?}", e);
+            println!("❌ Erreur decode: {:?}", e);
         }
     }
+}
+
+fn main() {
+    println!("🔗 Connexion au réseau pizza_factory...");
+
+    let recipes_content = fs::read_to_string(
+        "/Users/sohaila/pizza-project/pizza_factory/recipes/examples.recipes"
+    ).expect("❌ Impossible de lire le fichier recipes");
+
+    println!("📄 Recipes loaded:\n{}", recipes_content);
+
+    let recipes_list = parse_recipes(&recipes_content);
+
+    println!("🍕 Recettes disponibles: {:?}", recipes_list);
+
+    match TcpStream::connect("127.0.0.1:8000") {
+        Ok(_) => println!("✅ Connecté au réseau !"),
+        Err(e) => println!("⚠️ Pas connecté (normal): {:?}", e),
+    }
+
+    let listener = TcpListener::bind("127.0.0.1:9000")
+        .expect("❌ Impossible de lancer le serveur");
+
+    println!("🚀 Agent lancé sur 127.0.0.1:9000");
+
+    for stream in listener.incoming() {
+        match stream {
+            Ok(stream) => {
+                println!("📩 Nouvelle connexion");
+                handle_client(stream, &recipes_list);
+            }
+            Err(e) => println!("❌ Erreur connexion: {:?}", e),
+        }
+    }
+}
+
+fn parse_recipes(content: &str) -> Vec<String> {
+    content
+        .lines()
+        .filter(|line| line.trim().ends_with("="))
+        .map(|line| line.split('=').next().unwrap().trim().to_string())
+        .collect()
 }
