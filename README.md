@@ -46,7 +46,7 @@ pizza-project/
 
 ---
 
-## 🍕 Gestion des recettes (BONUS)
+##  Gestion des recettes (BONUS)
 
 Au lieu de coder les recettes en dur, nous avons implémenté un système dynamique :
 
@@ -59,7 +59,7 @@ pizza_factory/recipes/examples.recipes
 * Parsing automatique des recettes
 * Extraction des noms de pizzas
 
-👉 Exemple :
+Exemple :
 
 ```
 Margherita =
@@ -73,9 +73,9 @@ Margherita =
 
 ---
 
-## 🚀 Lancer le projet (TEST LOCAL)
+## Lancer le projet (TEST LOCAL)
 
-### 🟢 1. Lancer pizza_factory
+###  1. Lancer pizza_factory
 
 ```bash
 cd archive-2026-03-01T12:59:55/aarch64-apple-darwin
@@ -89,7 +89,7 @@ chmod +x pizza_factory
 
 ---
 
-### 🔵 2. Lancer notre agent
+###  2. Lancer notre agent
 
 ```bash
 cd ~/pizza-project/pizza_agent
@@ -98,7 +98,7 @@ cargo run --bin pizza_agent
 
 ---
 
-### 🟣 3. Tester avec le client
+### 3. Tester avec le client
 
 ```bash
 ./pizza_factory client --peer 127.0.0.1:8000 order Margherita
@@ -106,7 +106,7 @@ cargo run --bin pizza_agent
 
 ---
 
-## ✅ Résultat attendu
+## Résultat attendu
 
 ```
 Order completed successfully
@@ -124,7 +124,7 @@ Baked
 
 ---
 
-## 🧪 Tests réalisés
+## Tests réalisés
 
 * ✔ Connexion TCP client / agent
 * ✔ Envoi et réception de requêtes
@@ -134,7 +134,7 @@ Baked
 
 ---
 
-## 🛠 Technologies utilisées
+## Technologies utilisées
 
 * Rust (édition 2021)
 * TCP (std::net)
@@ -144,7 +144,7 @@ Baked
 
 ---
 
-## 🔍 Reverse Engineering
+## Reverse Engineering
 
 Nous avons utilisé :
 
@@ -154,7 +154,7 @@ Nous avons utilisé :
 
 ---
 
-## 🎯 Améliorations possibles
+##  Améliorations possibles
 
 * Implémentation complète du DSL (exécution réelle des étapes)
 * Système de forwarding vers d'autres agents
@@ -163,13 +163,14 @@ Nous avons utilisé :
 
 ---
 
-## 👨‍💻 Auteur
+## Auteur
 
 * Sohaila
+* Adham
 
 ---
 
-## 🏁 Conclusion
+## Conclusion
 
 Ce projet nous a permis de :
 

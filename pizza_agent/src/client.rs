@@ -35,7 +35,6 @@ use std::thread::sleep;
     let mut buffer = Vec::new();
     into_writer(&request, &mut buffer).unwrap();
 
-    // envoyer taille + data
     let len = (buffer.len() as u32).to_be_bytes();
     stream.write_all(&len).unwrap();
     stream.write_all(&buffer).unwrap();

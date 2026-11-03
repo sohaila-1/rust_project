@@ -14,10 +14,6 @@ cd ~/pizza-project/archive-2026-03-01T12:59:55/aarch64-apple-darwin
 --capabilities MakeDough AddBase AddCheese AddBasil Bake AddOliveOil
 ```
 
-👉 Dire à l’oral :
-
-"Je lance le serveur principal qui va orchestrer la production des pizzas."
-
 ---
 
 ### 🟣 STEP 2 — Lancer notre agent

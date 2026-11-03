@@ -12,10 +12,8 @@ use protocol::{Request, Response};
 fn handle_client(mut stream: TcpStream, recipes: &Vec<String>) {
     println!("📩 Client connecté");
 
-    // timeout
     stream.set_read_timeout(Some(Duration::from_secs(5))).ok();
 
-    // Lire taille
     let mut len_buf = [0u8; 4];
     if let Err(e) = stream.read_exact(&mut len_buf) {
         println!("❌ Erreur lecture taille: {:?}", e);
@@ -24,14 +22,12 @@ fn handle_client(mut stream: TcpStream, recipes: &Vec<String>) {
 
     let len = u32::from_be_bytes(len_buf);
 
-    // Lire data
     let mut data = vec![0u8; len as usize];
     if let Err(e) = stream.read_exact(&mut data) {
         println!("❌ Erreur lecture data: {:?}", e);
         return;
     }
 
-    // Décoder
     match from_reader::<Request, _>(&data[..]) {
         Ok(req) => {
             println!("📨 Requête reçue: {:?}", req);
@@ -73,19 +69,16 @@ fn handle_client(mut stream: TcpStream, recipes: &Vec<String>) {
 fn main() {
     println!("🔗 Connexion au réseau pizza_factory...");
 
-    // 🔥 1. Lire fichier
     let recipes_content = fs::read_to_string(
         "/Users/sohaila/pizza-project/pizza_factory/recipes/examples.recipes"
     ).expect("❌ Impossible de lire le fichier recipes");
 
     println!("📄 Recipes loaded:\n{}", recipes_content);
 
-    // 🔥 2. Parser
     let recipes_list = parse_recipes(&recipes_content);
 
     println!("🍕 Recettes disponibles: {:?}", recipes_list);
 
-    // Connexion test
     match TcpStream::connect("127.0.0.1:8000") {
         Ok(_) => println!("✅ Connecté au réseau !"),
         Err(e) => println!("⚠️ Pas connecté (normal): {:?}", e),
