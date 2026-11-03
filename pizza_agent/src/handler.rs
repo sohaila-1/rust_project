@@ -4,6 +4,8 @@ pub fn process_request(req: Request, recipes: &Vec<String>) -> String {
     match req {
         Request::Order { recipe_name } => {
 
+            // communication avec le serveur cassé 
+
             if recipes.contains(&recipe_name) {
                 let mut pizza = String::new();
                 pizza.push_str("Dough prepared\n");
